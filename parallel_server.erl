@@ -1,56 +1,62 @@
 -module(parallel_server).
--compile([export_all, nowarn_export_all]).
+-export([start/1, established_state/2]).
 
 start(Port) ->
-    register(toy_webserver, self()),
+    register(parallel_server, self()),
     {ok, ListenSocket} =
         gen_tcp:listen(Port,
                        [list,
                         {packet, 0},
                         {active, true},
                         {reuseaddr, true}]),
-    connect_loop(ListenSocket).
+    listen_state(ListenSocket, 1).
 
-connect_loop(ListenSocket) ->
-    %% Check if we've received message to shut down server, otherwise listen for connections.
+listen_state(Socket, HandlerCount) ->
+    %% Check if we've received message to shut down server, otherwise listen
+    %% for connections.
     receive
         stop ->
-            io:format("Server: shutting down...~n~n"),
-            ok = gen_tcp:close(ListenSocket),
+            io:format("ListeningServer: Received 'stop' - shutting down...~n~n"),
+            ok = gen_tcp:close(Socket),
             exit(normal)
     after
         0 ->
-            {ok, {ListenIp, ListenPort}} = inet:sockname(ListenSocket),
-            ok = io:format("Server: Listening on IP ~p port ~p~n", [ListenIp, ListenPort])
+            {ok, {ListenIp, ListenPort}} = inet:sockname(Socket),
+            ok = io:format("Server: Listening on IP ~p port ~p~n",
+                           [ListenIp, ListenPort])
     end,
-    case gen_tcp:accept(ListenSocket, timer:seconds(30)) of
+    case gen_tcp:accept(Socket, timer:seconds(30)) of
         %% A client connected, handle request.
-        {ok, Socket} ->
-            {ok, {LocalIp, LocalPort}} = inet:sockname(Socket),
-            {ok, {PeerIp, PeerPort}} = inet:peername(Socket),
-            io:format("Server: Accepted connection from IP ~p port ~p on IP ~p port ~p~n",
-                        [PeerIp, PeerPort, LocalIp, LocalPort]),
-            handle_connection(Socket);
-        %% No client connected for a while, time out so we can check for stop message in next loop iteration.
+        {ok, EstablishedSocket} ->
+            {ok, {LocalIp, LocalPort}} = inet:sockname(EstablishedSocket),
+            {ok, {PeerIp, PeerPort}} = inet:peername(EstablishedSocket),
+            %% FIXME I'm sure there is a tidier way...
+            HandlerName = lists:flatten("Server" ++ io_lib:format("~3..0w", [HandlerCount])),
+            io:format("ListeningServer: Accepted connection from IP ~p port ~p on IP "
+                      "~p port ~p - Spawning handler...~n",
+                      [PeerIp, PeerPort, LocalIp, LocalPort]),
+            spawn_link(?MODULE, established_state, [EstablishedSocket, HandlerName]);
+        %% No client connected for a while, time out so we can check for stop
+        %% message in next loop iteration.
         {error, timeout} ->
-            io:format("Server: no client request to handle...~n~n")
+            io:format("ListeningServer: No client request to handle...~n~n")
     end,
-    connect_loop(ListenSocket).
+    listen_state(Socket, HandlerCount + 1).
 
-handle_connection(Socket) ->
+established_state(Socket, ServerName) ->
     receive
        {tcp, Socket, StringMsg} ->
-            io:format("Server: Received message: ~p~n", [StringMsg]),
-            io:format("Server: working on request...~n"),
+            io:format("~p: Received message: ~p~n", [ServerName, StringMsg]),
+            io:format("~p: Working on request...~n", [ServerName]),
             %% Fake doing some work that takes time.
             timer:sleep(timer:seconds(3)),
             Reply = "Echo " ++ StringMsg,
-            io:format("Server: Replying: ~p~n~n", [Reply]),
+            io:format("~p: Replying: ~p~n~n", [ServerName, Reply]),
             ok = gen_tcp:send(Socket, Reply);
         {tcp_closed, Socket} ->
-            io:format("Server: Client closed socket, aborting...~n~n")
+            io:format("~p: Client closed socket, shutting down...~n~n", [ServerName])
     after
         timer:seconds(30) ->
-            io:format("Server: No data received from client~n~n")
+            io:format("~p: No data received from client~n~n", [ServerName])
     end,
     ok = gen_tcp:close(Socket).
