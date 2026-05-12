@@ -21,7 +21,7 @@ groups() ->
 init_per_suite(Config) ->
     %% For using Erlang's httpc module in test
     inets:start(),
-    Config ++ [{host, "localhost"},
+    Config ++ [{host, "127.0.0.1"},
                {port, 7777}].
 
 end_per_suite(_Config) ->
@@ -32,8 +32,8 @@ tc_server_onetime_request(Config) ->
     Host = proplists:get_value(host, Config),
     Port = proplists:get_value(port, Config),
     spawn_link(single_req_server, start, [Port]),
-    {tcp, _Socket, "Echo Hello"} = client:start(Host, Port),
-    {error, econnrefused} = client:start(Host, Port),
+    {tcp, _Socket, "Echo Hello"} = client:start(Host, Port, "Hello"),
+    {error, econnrefused} = client:start(Host, Port, "Hello"),
     ok.
 
 tc_server_multiple_client_requests(Config) ->
@@ -41,8 +41,8 @@ tc_server_multiple_client_requests(Config) ->
     Port = proplists:get_value(port, Config),
     spawn_link(multi_req_server, start, [Port]),
     timer:sleep(100), %% Give server some time to start up before clients connect.
-    {tcp, _Socket1, "Echo Hello"} = client:start(Host, Port),
-    {tcp, _Socket2, "Echo Hello"} = client:start(Host, Port),
+    {tcp, _Socket1, "Echo Hello"} = client:start(Host, Port, "Hello"),
+    {tcp, _Socket2, "Echo Hello"} = client:start(Host, Port, "Hello"),
     multi_req_server ! stop,
     ok.
 
@@ -54,7 +54,7 @@ tc_server_parallell_client_requests(Config) ->
     NoOfRequests = 5,
     [ spawn_link(fun() ->
                          timer:sleep(N * 10),
-                         Reply = client:start(Host, Port),
+                         Reply = client:start(Host, Port, "Hello"),
                          TcPid ! Reply
                  end)
       || N <- lists:seq(1, NoOfRequests) ],
