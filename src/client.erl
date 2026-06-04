@@ -1,4 +1,5 @@
 -module(client).
+
 -compile([export_all, nowarn_export_all]).
 
 start(IpString, Port, Data) ->
@@ -18,17 +19,16 @@ handle_connection({ok, Socket}, Data) ->
     {ok, {PeerIp, PeerPort}} = inet:peername(Socket),
     Pid = self(),
     io:format("Client~p: Connected to IP ~p port ~p from IP ~p port ~p ~n",
-                   [Pid, PeerIp, PeerPort, LocalIp, LocalPort]),
+              [Pid, PeerIp, PeerPort, LocalIp, LocalPort]),
     ok = gen_tcp:send(Socket, Data),
     ReplyFromServer =
         receive
             Reply ->
                 io:format("Client~p: Reply: ~p~n", [Pid, Reply]),
-                Reply
-        after
-            timer:seconds(30) ->
-                io:format("Client~p: No data received.~n", [Pid]),
-                {}
+                {ok, Reply}
+        after timer:seconds(30) ->
+            io:format("Client~p: No data received.~n", [Pid]),
+            {error, no_response}
         end,
     io:format("Client~p: Closing connection.~n", [Pid]),
     ok = gen_tcp:close(Socket),
