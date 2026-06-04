@@ -46,7 +46,8 @@ parse_resource(Resource) ->
 parse_headers(HeaderText) ->
     HeaderPropList =
         lists:map(fun("te:") ->
-                    %% Workaround for bug in Erlang OTP 24 httpc:reqest/1
+                    %% Workaround for bug in Erlang OTP 24 httpc:reqest/1 sending
+                    %% empty transfer encoding header.
                     %% See: https://github.com/erlang/otp/issues/10065
                     {"te", "bogus"};
                      (H) ->
@@ -69,17 +70,9 @@ make_response_code(500) -> "HTTP/1.1 500 Internal Server Error\r\n".
 get_content("/") ->
     % visitor_counter:increment(),
     file:read_file("content/index.html");
-get_content("/visitors") ->
-   get_visitor_count();
-get_content("/visitors2") ->
-   {error, "?"};
 get_content([$/ | FileName]) ->
     % visitor_counter:increment(),
     Resource = ?HTTP_SERVER_ROOT ++ "/content/" ++ FileName,
     file:read_file(Resource);
 get_content(_) ->
     {error, enoent}.
-
-get_visitor_count() ->
-    Count = visitor_counter:get_count(),
-    {ok, list_to_binary("Visitors: " ++ integer_to_list(Count))}.
