@@ -12,26 +12,34 @@ handle_request(Request) ->
     {{_Method = "GET", Resource, "HTTP/1.1"}, RequestHeaders} = parse_request(Request),
     ct:pal("http: Resource: ~p~n", [Resource]),
     ct:pal("http: RequestHeaders: ~p~n", [RequestHeaders]),
-    %% TODO: 404/500 if not found
     {Header, ResponseContent} =
-        case get_content(Resource) of
-            {ok, Content} ->
-                Mime = mime:get(Resource),
-                io:format("http: Mime: ~p~n", [Mime]),
+        case is_authorized(RequestHeaders) of
+            true ->
+                %% TODO: 404/500 if not found
+                case get_content(Resource) of
+                    {ok, Content} ->
+                        Mime = mime:get(Resource),
+                        io:format("http: Mime: ~p~n", [Mime]),
+                        ResponseHeaders = #{"Date" => date:rfc_2616(),
+                                            "Content-Type" => Mime},
+                        {make_header_text(200, ResponseHeaders), Content};
+                    {error, enoent} ->
+                        ResponseHeaders = #{"Date" => date:rfc_2616(),
+                                            "Content-Type" => "text/html"},
+                        Content = <<"404 Not Found">>,
+                        {make_header_text(404, ResponseHeaders), Content};
+                    _Else ->
+                        ResponseHeaders = #{"Date" => date:rfc_2616(),
+                                            "Content-Type" => "text/html"},
+                        Content = <<"500 Internal Server Error">>,
+                        {make_header_text(500, ResponseHeaders), Content}
+                end;
+            false ->
                 ResponseHeaders = #{"Date" => date:rfc_2616(),
-                                    "Content-Type" => Mime},
-                {make_header_text(200, ResponseHeaders), Content};
-            {error, enoent} ->
-                ResponseHeaders = #{"Date" => date:rfc_2616(),
-                                    "Content-Type" => "text/html"},
-                Content = <<"404 Not Found">>,
-                {make_header_text(404, ResponseHeaders), Content};
-            _Else ->
-                ResponseHeaders = #{"Date" => date:rfc_2616(),
-                                    "Content-Type" => "text/html"},
-                Content = <<"500 Internal Server Error">>,
-                {make_header_text(500, ResponseHeaders), Content}
-    end,
+                                    "Content-Type" => "text/plain; charset=utf-8"},
+                Content = <<"401 Unauthorized">>,
+                {make_header_text(401, ResponseHeaders), Content}
+        end,
     lists:concat([Header, binary_to_list(ResponseContent)]).
 
 parse_request(Request) ->
@@ -64,6 +72,7 @@ make_header_text(ResponseCode, Headers) ->
     lists:flatten([ResponseCodeText | HeaderText]) ++ "\r\n".
 
 make_response_code(200) -> "HTTP/1.1 200 OK\r\n";
+make_response_code(401) -> "HTTP/1.1 401 Unauthorized\r\n";
 make_response_code(404) -> "HTTP/1.1 404 Not Found\r\n";
 make_response_code(500) -> "HTTP/1.1 500 Internal Server Error\r\n".
 
@@ -72,7 +81,51 @@ get_content("/") ->
     file:read_file("content/index.html");
 get_content([$/ | FileName]) ->
     % visitor_counter:increment(),
-    Resource = ?HTTP_SERVER_ROOT ++ "/content/" ++ FileName,
+    Resource = server_root() ++ "/content/" ++ FileName,
     file:read_file(Resource);
 get_content(_) ->
     {error, enoent}.
+
+server_root() ->
+    case os:getenv("HTTP_SERVER_ROOT") of
+        false ->
+            ?DEFAULT_HTTP_SERVER_ROOT;
+        "" ->
+            ?DEFAULT_HTTP_SERVER_ROOT;
+        Root ->
+            Root
+    end.
+
+is_authorized(RequestHeaders) ->
+    case os:getenv("CLASS_SHARED_TOKEN") of
+        false ->
+            true;
+        "" ->
+            true;
+        RequiredToken ->
+            case header_value_ci("x-class-token", RequestHeaders) of
+                undefined ->
+                    false;
+                RequiredToken ->
+                    true;
+                _Other ->
+                    false
+            end
+    end.
+
+header_value_ci(Key, HeadersMap) ->
+    LowerKey = string:lowercase(Key),
+    lists:foldl(
+      fun({HeaderKey, HeaderVal}, Acc) ->
+              case Acc of
+                  undefined ->
+                      case string:lowercase(HeaderKey) of
+                          LowerKey -> HeaderVal;
+                          _ -> undefined
+                      end;
+                  _ ->
+                      Acc
+              end
+      end,
+      undefined,
+      maps:to_list(HeadersMap)).

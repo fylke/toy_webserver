@@ -1,0 +1,20 @@
+{
+  "name": "toy_webserver (OTP 26)",
+  "dockerComposeFile": "../docker-compose.yml",
+  "service": "erlang-dev",
+  "workspaceFolder": "/workspace/toy_webserver",
+  "forwardPorts": [8080, 8081, 7777],
+  "postCreateCommand": "erl -eval 'io:format(\"OTP=~s~n\", [erlang:system_info(otp_release)]), halt().' -noshell",
+  "runServices": ["erlang-dev", "edge-proxy"],
+  "shutdownAction": "stopCompose",
+  "customizations": {
+    "vscode": {
+      "settings": {
+        "terminal.integrated.defaultProfile.linux": "bash"
+      },
+      "extensions": [
+        "erlang-ls.erlang-ls"
+      ]
+    }
+  }
+}

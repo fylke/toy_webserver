@@ -19,3 +19,6 @@ _checkouts/
 
 # docs
 *.epub
+
+# local environment overrides
+.env
