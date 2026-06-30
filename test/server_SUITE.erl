@@ -21,22 +21,10 @@ groups() ->
 init_per_suite(Config) ->
     %% For using Erlang's httpc module in test
     inets:start(),
-    {ok, Cwd} = file:get_cwd(),
-    %% Normalize the repo root so the suite works from Docker or any other
-    %% checkout location, and preserve the previous process-wide env values.
-    Root = find_project_root(Cwd),
-    PrevRoot = os:getenv("HTTP_SERVER_ROOT"),
-    PrevToken = os:getenv("CLASS_SHARED_TOKEN"),
-    true = os:putenv("HTTP_SERVER_ROOT", Root),
-    os:unsetenv("CLASS_SHARED_TOKEN"),
     Config ++ [{host, "127.0.0.1"},
-               {port, 7777},
-               {prev_http_server_root, PrevRoot},
-               {prev_class_shared_token, PrevToken}].
+               {port, 7777}].
 
-end_per_suite(Config) ->
-    restore_env("HTTP_SERVER_ROOT", proplists:get_value(prev_http_server_root, Config)),
-    restore_env("CLASS_SHARED_TOKEN", proplists:get_value(prev_class_shared_token, Config)),
+end_per_suite(_Config) ->
     inets:stop(),
     ok.
 
@@ -44,7 +32,7 @@ tc_server_onetime_request(Config) ->
     Host = proplists:get_value(host, Config),
     Port = proplists:get_value(port, Config),
     spawn_link(single_req_server, start, [Port]),
-    timer:sleep(100), %% Give server some time to start up before clients connect.
+    timer:sleep(100), %% Give server some time to start up before client connects.
     {tcp, _Socket, "Echo Hello"} = client:start(Host, Port, "Hello"),
     {error, econnrefused} = client:start(Host, Port, "Hello"),
     ok.
@@ -63,7 +51,6 @@ tc_server_parallell_client_requests(Config) ->
     Host = proplists:get_value(host, Config),
     Port = proplists:get_value(port, Config),
     spawn_link(parallel_server, start, [Port]),
-    timer:sleep(100), %% Give server some time to start up before clients connect.
     TcPid = self(),
     NoOfRequests = 5,
     [ spawn_link(fun() ->
@@ -158,29 +145,3 @@ receive_replies(N) when is_integer(N), N > 0 ->
             ct:fail("Did not get reply from request ~p~n", [N])
     end,
     receive_replies(N - 1).
-
-find_project_root(StartDir) ->
-    find_project_root(StartDir, 0).
-
-find_project_root(Dir, Depth) when Depth < 10 ->
-    Probe = filename:join([Dir, "content", "test.html"]),
-    case filelib:is_file(Probe) of
-        true ->
-            Dir;
-        false ->
-            Parent = filename:dirname(Dir),
-            case Parent =:= Dir of
-                true ->
-                    element(2, file:get_cwd());
-                false ->
-                    find_project_root(Parent, Depth + 1)
-            end
-    end;
-find_project_root(_Dir, _Depth) ->
-    {ok, Cwd} = file:get_cwd(),
-    Cwd.
-
-restore_env(Name, false) ->
-    os:unsetenv(Name);
-restore_env(Name, Value) ->
-    true = os:putenv(Name, Value).

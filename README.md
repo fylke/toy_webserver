@@ -15,6 +15,7 @@ An extremely simple web server for educational purposes. It exists in four diffe
 ## Common test
 
 ```console
+$ mkdir ct
 $ ct_run -dir . -logdir ct
 ```
 
