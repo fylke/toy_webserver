@@ -12,6 +12,33 @@ An extremely simple web server for educational purposes. It exists in four diffe
 $ ct_run -dir . -logdir ct
 ```
 
+## Build with rebar3 (minimal setup)
+
+This repo now includes a minimal `rebar3` configuration that compiles the
+existing top-level `.erl` files without moving them into `src/`.
+
+```console
+$ rebar3 compile
+```
+
+To clean generated build output:
+
+```console
+$ rebar3 clean
+```
+
+To run Common Test through rebar3 (recommended):
+
+```console
+$ rebar3 ct
+```
+
+You can still run Common Test the same way as before:
+
+```console
+$ ct_run -dir . -logdir ct
+```
+
 Or from an Erlang shell
 ```console
 $ ct:run_test([{suite, "./server_SUITE"}, {logdir, "./ct"}]).
