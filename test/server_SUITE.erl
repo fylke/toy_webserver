@@ -21,7 +21,9 @@ groups() ->
 init_per_suite(Config) ->
     %% For using Erlang's httpc module in test
     inets:start(),
-    Cwd = element(2, file:get_cwd()),
+    {ok, Cwd} = file:get_cwd(),
+    %% Normalize the repo root so the suite works from Docker or any other
+    %% checkout location, and preserve the previous process-wide env values.
     Root = find_project_root(Cwd),
     PrevRoot = os:getenv("HTTP_SERVER_ROOT"),
     PrevToken = os:getenv("CLASS_SHARED_TOKEN"),
@@ -70,7 +72,7 @@ tc_server_parallell_client_requests(Config) ->
                          TcPid ! Reply
                  end)
       || N <- lists:seq(1, NoOfRequests) ],
-        receive_replies(NoOfRequests),
+    receive_replies(NoOfRequests),
     ct:pal("Got replies from server for all client requests."),
     parallel_server ! stop,
     ok.
@@ -175,7 +177,8 @@ find_project_root(Dir, Depth) when Depth < 10 ->
             end
     end;
 find_project_root(_Dir, _Depth) ->
-    element(2, file:get_cwd()).
+    {ok, Cwd} = file:get_cwd(),
+    Cwd.
 
 restore_env(Name, false) ->
     os:unsetenv(Name);
