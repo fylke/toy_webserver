@@ -6,7 +6,6 @@ start(Port) ->
     {ok, ListenSocket} =
         gen_tcp:listen(Port,
                        [list,
-                        {packet, 0},
                         {active, true},
                         {reuseaddr, true}]),
     listen_state(ListenSocket).
@@ -30,10 +29,10 @@ listen_state(Socket) ->
         {ok, EstablishedSocket} ->
             {ok, {LocalIp, LocalPort}} = inet:sockname(EstablishedSocket),
             {ok, {PeerIp, PeerPort}} = inet:peername(EstablishedSocket),
-            io:format("~p: Accepted connection:~n  send IP ~p port ~p~n\t"
+            io:format("~p: Accepted connection:~n  send IP ~p port ~p~n"
                       "  recv IP ~p port ~p - Spawning handler...~n",
                       [Pid, PeerIp, PeerPort, LocalIp, LocalPort]),
-            HandlerPid = spawn(?MODULE, established_state, [EstablishedSocket]),
+            HandlerPid = spawn(http_server, established_state, [EstablishedSocket]),
             %% Whichever process accepts TCP connection owns the socket, and also gets
             %% any data client sends, so need to handover socket to handler process.
             gen_tcp:controlling_process(EstablishedSocket, HandlerPid);

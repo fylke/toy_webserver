@@ -5,7 +5,6 @@ start(Port) ->
     {ok, ListenSocket} =
         gen_tcp:listen(Port,
                        [list,
-                        {packet, 0},
                         {active, true},
                         {reuseaddr, true}]),
     listen_state(ListenSocket).

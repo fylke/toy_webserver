@@ -6,7 +6,6 @@ start(Port) ->
     {ok, ListenSocket} =
         gen_tcp:listen(Port,
                        [list,
-                        {packet, 0},
                         {active, true},
                         {reuseaddr, true}]),
     listen_state(ListenSocket).
@@ -39,7 +38,7 @@ listen_state(Socket) ->
         {error, timeout} ->
             io:format("~p: No client request to handle...~n~n", [Pid])
     end,
-    ?MODULE:listen_state(Socket).
+    listen_state(Socket).
 
 established_state(Socket) ->
     Pid = self(),
