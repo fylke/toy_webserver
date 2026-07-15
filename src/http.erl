@@ -78,7 +78,9 @@ make_response_code(500) -> "HTTP/1.1 500 Internal Server Error\r\n".
 
 get_content("/") ->
     % visitor_counter:increment(),
-    file:read_file("content/index.html");
+    FileName = "index.html",
+    Resource = server_root() ++ "/content/" ++ FileName,
+    file:read_file(Resource);
 get_content([$/ | FileName]) ->
     % visitor_counter:increment(),
     Resource = server_root() ++ "/content/" ++ FileName,
