@@ -15,8 +15,7 @@ An extremely simple web server for educational purposes. It exists in four diffe
 ## Common test
 
 ```console
-$ mkdir ct
-$ ct_run -dir . -logdir ct
+$ rebar3 ct
 ```
 
 ## Build with rebar3 (minimal setup)
@@ -40,41 +39,32 @@ To run Common Test through rebar3 (recommended):
 $ rebar3 ct
 ```
 
-You can still run Common Test the same way as before:
-
-```console
-$ ct_run -dir . -logdir ct
-```
-
-Or from an Erlang shell
-```console
-$ ct:run_test([{suite, "./server_SUITE"}, {logdir, "./ct"}]).
-$ ct:run_test([{suite, "./server_SUITE"}, {logdir, "./ct"}, {group, server_tests}, {case, [tc_server_parallell_client_requests]} ]).
-```
-
 ## Dev Container (OTP 26)
 
 This repository includes a VS Code Dev Container configuration so students can
 code in a reproducible Erlang environment.
+
+Before starting, install the VS Code extension `ms-vscode-remote.remote-containers`
+(Dev Containers).
 
 1. Open the repository in VS Code.
 2. Run "Dev Containers: Reopen in Container".
 3. Open a terminal in the container and compile:
 
 ```console
-$ erlc *.erl
+$ rebar3 compile
 ```
 
 4. Run tests:
 
 ```console
-$ ct_run -dir . -logdir ct
+$ rebar3 ct
 ```
 
-5. Start the HTTP server from an Erlang shell:
+5. Start the HTTP server from a rebar3 shell:
 
 ```console
-$ erl
+$ rebar3 shell
 1> http_server:start(8080).
 ```
 
