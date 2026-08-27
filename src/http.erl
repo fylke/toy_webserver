@@ -12,8 +12,8 @@ handle_request(Request) ->
     {{_Method = "GET", Resource, "HTTP/1.1"}, RequestHeaders} = parse_request(Request),
     ct:pal("http: Resource: ~p~n", [Resource]),
     ct:pal("http: RequestHeaders: ~p~n", [RequestHeaders]),
-    %% TODO: 404/500 if not found
     {Header, ResponseContent} =
+        %% TODO: 404/500 if not found
         case get_content(Resource) of
             {ok, Content} ->
                 Mime = mime:get(Resource),
@@ -31,7 +31,7 @@ handle_request(Request) ->
                                     "Content-Type" => "text/html"},
                 Content = <<"500 Internal Server Error">>,
                 {make_header_text(500, ResponseHeaders), Content}
-    end,
+        end,
     lists:concat([Header, binary_to_list(ResponseContent)]).
 
 parse_request(Request) ->
@@ -69,10 +69,22 @@ make_response_code(500) -> "HTTP/1.1 500 Internal Server Error\r\n".
 
 get_content("/") ->
     % visitor_counter:increment(),
-    file:read_file("content/index.html");
+    FileName = "index.html",
+    Resource = server_root() ++ "/content/" ++ FileName,
+    file:read_file(Resource);
 get_content([$/ | FileName]) ->
     % visitor_counter:increment(),
-    Resource = ?HTTP_SERVER_ROOT ++ "/content/" ++ FileName,
+    Resource = server_root() ++ "/content/" ++ FileName,
     file:read_file(Resource);
 get_content(_) ->
     {error, enoent}.
+
+server_root() ->
+    case os:getenv("HTTP_SERVER_ROOT") of
+        false ->
+            ?DEFAULT_HTTP_SERVER_ROOT;
+        "" ->
+            ?DEFAULT_HTTP_SERVER_ROOT;
+        Root ->
+            Root
+    end.

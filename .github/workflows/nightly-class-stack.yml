@@ -1,0 +1,45 @@
+name: Nightly class stack test
+
+on:
+  schedule:
+    - cron: '0 3 * * *'
+  workflow_dispatch: {}
+
+# The compose stack uses a Linux container image (erlang:26-slim), which
+# GitHub-hosted Windows runners can't reliably run (they default to Windows
+# containers). Both jobs therefore run on Linux; the "pwsh" job validates the
+# PowerShell (.ps1) script logic under PowerShell Core rather than on a real
+# Windows OS.
+jobs:
+  bash-scripts:
+    runs-on: ubuntu-latest
+    env:
+      COMPOSE_CMD: docker compose
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run start/verify/stop test (bash)
+        run: ./scripts/test-class-stack.sh
+
+  pwsh-scripts:
+    runs-on: ubuntu-latest
+    env:
+      COMPOSE_CMD: docker compose
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run start/verify/stop test (pwsh)
+        shell: pwsh
+        run: ./scripts/test-class-stack.ps1
+
+  common-test:
+    runs-on: ubuntu-latest
+    env:
+      # Needed for tc_http_server_get to find content/ under ct's working directory.
+      HTTP_SERVER_ROOT: ${{ github.workspace }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: erlef/setup-beam@v1
+        with:
+          otp-version: '26'
+          rebar3-version: '3.26.0'
+      - name: Run Common Test suite
+        run: rebar3 ct

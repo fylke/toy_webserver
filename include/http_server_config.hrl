@@ -1,2 +1,3 @@
-%% Get this from cwd() in shell or {ok, Root} = file:get_cwd()
--define(HTTP_SERVER_ROOT, "/mnt/c/Users/Magnusle/code/toy_webserver").
+%% Default root for static files. Can be overridden at runtime with
+%% HTTP_SERVER_ROOT, which is useful in containers and CI.
+-define(DEFAULT_HTTP_SERVER_ROOT, ".").

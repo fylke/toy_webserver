@@ -1,0 +1,15 @@
+services:
+  erlang-dev:
+    build:
+      context: .
+      dockerfile: .devcontainer/Dockerfile
+    container_name: toy_webserver_dev
+    working_dir: /workspace/toy_webserver
+    volumes:
+      - .:/workspace/toy_webserver
+    environment:
+      HTTP_SERVER_ROOT: /workspace/toy_webserver
+    command: ["bash", "-lc", "sleep infinity"]
+    ports:
+      - "${HOST_TCP_PORT:-7777}:7777"
+      - "${HOST_HTTP_PORT:-8080}:8080"

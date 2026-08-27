@@ -3,6 +3,7 @@
 *.beam
 *.plt
 erl_crash.dump
+rebar3.crashdump
 .concrete/DEV_MODE
 ct
 
@@ -19,3 +20,7 @@ _checkouts/
 
 # docs
 *.epub
+
+# local environment overrides
+.env
+.class-ports.env
