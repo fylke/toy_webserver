@@ -106,6 +106,19 @@ Instructors need:
   Containers extension and Docker (or Podman configured as VS Code's
   container engine).
 
+A phone hotspot can work as the classroom LAN — most consumer hotspots don't
+isolate connected clients from each other — but check a few things first:
+
+- **Windows firewall profile:** Windows usually classifies a phone hotspot as
+  a "Public" network, and blocks unsolicited inbound connections on Public
+  profiles by default. Add an inbound firewall rule for TCP 8080 (and 7777)
+  on the instructor's machine, or students won't be able to connect even
+  though they're on the same network.
+- **Client/AP isolation:** some phones or carrier firmware isolate connected
+  devices from each other by default. Test with two devices before class.
+- **Device count limits:** many carriers cap the number of hotspot clients,
+  which may be too few for a full classroom.
+
 ### Choose Your Path
 
 - Use the Windows path if you do not use WSL.
