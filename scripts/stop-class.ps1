@@ -7,8 +7,12 @@ function Invoke-Compose {
     )
 
     if (-not [string]::IsNullOrWhiteSpace($env:COMPOSE_CMD)) {
-        $command = $env:COMPOSE_CMD
-        & $command @Arguments
+        $parts = $env:COMPOSE_CMD -split '\s+'
+        $leadingArgs = @()
+        if ($parts.Length -gt 1) {
+            $leadingArgs = $parts[1..($parts.Length - 1)]
+        }
+        & $parts[0] @($leadingArgs + $Arguments)
         return
     }
 
@@ -28,5 +32,5 @@ function Invoke-Compose {
     throw 'Install podman or podman-compose before running this script.'
 }
 
-Remove-Item -Path (Join-Path $PSScriptRoot '..\.class-ports.env') -ErrorAction SilentlyContinue
+Remove-Item -Path (Join-Path $PSScriptRoot '..\.class-ports.env') -Force -ErrorAction SilentlyContinue
 Invoke-Compose @('down')
