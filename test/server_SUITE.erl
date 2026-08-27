@@ -54,7 +54,7 @@ tc_server_parallell_client_requests(Config) ->
     TcPid = self(),
     NoOfRequests = 5,
     [ spawn_link(fun() ->
-                         timer:sleep(N * 10),
+                         timer:sleep(N * 100),
                          Reply = client:start(Host, Port, "Hello"),
                          TcPid ! Reply
                  end)
