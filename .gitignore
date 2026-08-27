@@ -22,3 +22,4 @@ _checkouts/
 
 # local environment overrides
 .env
+.class-ports.env

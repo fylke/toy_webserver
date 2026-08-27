@@ -1,31 +1,18 @@
 $ErrorActionPreference = 'Stop'
 
-function Get-ContainerCommand {
-    if (-not [string]::IsNullOrWhiteSpace($env:CONTAINER_CMD)) {
-        return $env:CONTAINER_CMD
-    }
-
-    if (Get-Command podman -ErrorAction SilentlyContinue) {
-        return 'podman'
-    }
-
-    if (Get-Command docker -ErrorAction SilentlyContinue) {
-        return 'docker'
-    }
-
-    throw 'No container CLI found. Install podman or docker.'
-}
-
-$containerCmd = Get-ContainerCommand
+$portsFile = Join-Path $PSScriptRoot '..\.class-ports.env'
 $httpPort = $env:HOST_HTTP_PORT
 
-if ([string]::IsNullOrWhiteSpace($httpPort)) {
-    $portLine = & $containerCmd port toy_webserver_dev 8080 | Select-Object -First 1
-    if ([string]::IsNullOrWhiteSpace($portLine)) {
-        throw 'Could not determine host HTTP port.'
+if ([string]::IsNullOrWhiteSpace($httpPort) -and (Test-Path $portsFile)) {
+    $portsFromFile = Get-Content $portsFile | ForEach-Object {
+        $key, $value = $_ -split '=', 2
+        [PSCustomObject]@{ Key = $key; Value = $value }
     }
+    $httpPort = ($portsFromFile | Where-Object { $_.Key -eq 'HOST_HTTP_PORT' } | Select-Object -First 1).Value
+}
 
-    $httpPort = ($portLine -split ':')[-1]
+if ([string]::IsNullOrWhiteSpace($httpPort)) {
+    $httpPort = '8080'
 }
 
 $response = Invoke-WebRequest -Uri "http://127.0.0.1:$httpPort/test.html" -SkipHttpErrorCheck

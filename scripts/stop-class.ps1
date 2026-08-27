@@ -28,4 +28,5 @@ function Invoke-Compose {
     throw 'Install podman or podman-compose before running this script.'
 }
 
+Remove-Item -Path (Join-Path $PSScriptRoot '..\.class-ports.env') -ErrorAction SilentlyContinue
 Invoke-Compose @('down')

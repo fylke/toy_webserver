@@ -14,4 +14,5 @@ else
 	exit 1
 fi
 
+rm -f "$(dirname "$0")/../.class-ports.env"
 $COMPOSE_CMD down

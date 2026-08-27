@@ -57,5 +57,8 @@ if ([string]::IsNullOrWhiteSpace($httpPort)) {
 
 Write-Host "Using host ports: tcp=$tcpPort http=$httpPort"
 
+$portsFile = Join-Path $PSScriptRoot '..\.class-ports.env'
+"HOST_TCP_PORT=$tcpPort`nHOST_HTTP_PORT=$httpPort" | Set-Content -Path $portsFile -NoNewline
+
 Invoke-Compose @('up', '-d', '--build')
 Invoke-Compose @('exec', '-T', 'erlang-dev', 'sh', '-lc', 'cd /workspace/toy_webserver && erlc *.erl && nohup erl -noshell -eval "http_server:start(8080)." >/tmp/http_server.log 2>&1 &')
