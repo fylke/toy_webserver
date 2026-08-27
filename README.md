@@ -1,36 +1,33 @@
 # toy_webserver
 An extremely simple web server for educational purposes. It exists in four different versions, with increasing complexity.
 
-## Choose Your Path
-
-- Use the Windows path if you do not use WSL.
-- Use the WSL path if you work inside WSL or a VS Code WSL window.
-- Both paths use the same container stack.
-
-## Prerequisites
-
-Students only need a web browser and a network connection to the
-instructor's machine — nothing else to install.
-
-Instructors need:
-
-- **Podman**, with either the `podman compose` plugin or `podman-compose`.
-  The class hosting scripts only auto-detect Podman; Docker works too, but
-  only if you set `COMPOSE_CMD="docker compose"` before running them.
-- **Windows path:** Podman for Windows, which runs via a Podman machine
-  backed by WSL2. You don't interact with WSL directly, but it gets
-  installed under the hood the first time you run `podman machine init`.
-- **WSL path:** WSL itself, with Podman/`podman-compose` installed inside it.
-- To use the separate "Dev Container (OTP 26)" VS Code workflow below, you
-  also need the Dev Containers extension and Docker (or Podman configured as
-  VS Code's container engine).
-
 1. A TCP server that echoes what is sent to it, and then closes the connection
 2. A TCP server that can serve multiple clients, but only one at a time
 3. A fully parallel TCP server that still only echoes what it's sent
 4. A basic HTTP server that understands GET
 
-## Build with rebar3
+This repository contains the instructor's reference implementation (marking
+key) under `src/`. Students receive a copy of this repository **without**
+`src/` and implement the modules themselves; `test/server_SUITE.erl` is the
+shared grading suite both sides build against.
+
+## For Students
+
+### Prerequisites
+
+- Erlang/OTP 26 and rebar3 installed locally, **or** the included
+  [Dev Container](#dev-container-otp-26) below (VS Code + Dev Containers
+  extension + Docker or Podman) for a reproducible environment.
+
+### Your task
+
+Implement the modules exercised by `test/server_SUITE.erl` under `src/`
+(`client.erl`, `http.erl`, `http_server.erl`, `single_req_server.erl`,
+`multi_req_server.erl`, `parallel_server.erl`, etc.) to satisfy the four
+versions listed above. The test suite is your spec — match the module and
+function names it calls.
+
+### Build & test loop
 
 ```console
 $ rebar3 compile
@@ -42,16 +39,21 @@ To clean generated build output:
 $ rebar3 clean
 ```
 
-To run the Common Test suite:
+To run the Common Test suite against your implementation:
 
 ```console
 $ rebar3 ct
 ```
 
+### Runtime environment variables
+
+- `HTTP_SERVER_ROOT`: Optional root path used for static content. Defaults to
+	`.` if unset.
+
 ## Dev Container (OTP 26)
 
-This repository includes a VS Code Dev Container configuration so students can
-code in a reproducible Erlang environment.
+This repository includes a VS Code Dev Container configuration for a
+reproducible Erlang environment.
 
 Before starting, install the VS Code extension `ms-vscode-remote.remote-containers`
 (Dev Containers).
@@ -70,21 +72,46 @@ $ rebar3 compile
 $ rebar3 ct
 ```
 
-5. Start the HTTP server from a rebar3 shell:
+5. Once `http_server` is implemented, start it from a rebar3 shell:
 
 ```console
 $ rebar3 shell
 1> http_server:start(8080).
 ```
 
-### Runtime environment variables
-
-- `HTTP_SERVER_ROOT`: Optional root path used for static content. Defaults to
-	`.` if unset.
-
 You can use [.env.example](.env.example) as a starting point for local values.
 Copy it to `.env` when you want compose to pick up host port overrides
 automatically.
+
+## For Instructors
+
+The sections below are for running the reference implementation (`src/`) to
+host a live demo for students, and are not needed by students working on
+their own implementation.
+
+### Prerequisites
+
+Students only need a web browser and a network connection to the
+instructor's machine to reach the hosted demo — nothing else to install.
+
+Instructors need:
+
+- **Podman**, with either the `podman compose` plugin or `podman-compose`.
+  The class hosting scripts only auto-detect Podman; Docker works too, but
+  only if you set `COMPOSE_CMD="docker compose"` before running them.
+- **Windows path:** Podman for Windows, which runs via a Podman machine
+  backed by WSL2. You don't interact with WSL directly, but it gets
+  installed under the hood the first time you run `podman machine init`.
+- **WSL path:** WSL itself, with Podman/`podman-compose` installed inside it.
+- To use the Dev Container VS Code workflow above, you also need the Dev
+  Containers extension and Docker (or Podman configured as VS Code's
+  container engine).
+
+### Choose Your Path
+
+- Use the Windows path if you do not use WSL.
+- Use the WSL path if you work inside WSL or a VS Code WSL window.
+- Both paths use the same container stack.
 
 ## Class hosting
 
