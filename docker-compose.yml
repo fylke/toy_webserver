@@ -9,9 +9,6 @@ services:
       - .:/workspace/toy_webserver
     environment:
       HTTP_SERVER_ROOT: /workspace/toy_webserver
-      DISPLAY: ""
-      WAYLAND_DISPLAY: ""
-      XDG_RUNTIME_DIR: ""
     command: ["bash", "-lc", "sleep infinity"]
     ports:
       - "${HOST_TCP_PORT:-7777}:7777"
