@@ -5,23 +5,14 @@ An extremely simple web server for educational purposes. It exists in four diffe
 
 - Use the Windows path if you do not use WSL.
 - Use the WSL path if you work inside WSL or a VS Code WSL window.
-- Both paths use the same container stack and the same shared token.
+- Both paths use the same container stack.
 
 1. A TCP server that echoes what is sent to it, and then closes the connection
 2. A TCP server that can serve multiple clients, but only one at a time
 3. A fully parallel TCP server that still only echoes what it's sent
 4. A basic HTTP server that understands GET
 
-## Common test
-
-```console
-$ rebar3 ct
-```
-
-## Build with rebar3 (minimal setup)
-
-This repo now includes a minimal `rebar3` configuration that compiles the
-existing top-level `.erl` files without moving them into `src/`.
+## Build with rebar3
 
 ```console
 $ rebar3 compile
@@ -33,7 +24,7 @@ To clean generated build output:
 $ rebar3 clean
 ```
 
-To run Common Test through rebar3 (recommended):
+To run the Common Test suite:
 
 ```console
 $ rebar3 ct
@@ -93,6 +84,9 @@ changing the scripts or Dockerfile), run:
 ```console
 $ ./scripts/test-class-stack.sh
 ```
+
+A PowerShell equivalent, `scripts/test-class-stack.ps1`, mirrors the same
+flow. Both run nightly in CI (see `.github/workflows/nightly-class-stack.yml`).
 
 ### Instructor checklist
 
@@ -205,6 +199,14 @@ $ ./scripts/verify-class.sh
 
 ## Debugging TCP connections
 
-```console
+On Windows (PowerShell):
+
+```powershell
 netstat -ano | Select-String "8080"
+```
+
+On WSL/Linux:
+
+```console
+$ ss -ltnp | grep 8080
 ```
