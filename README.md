@@ -46,8 +46,11 @@ $ rebar3 ct
 
 ### Runtime environment variables
 
-- `HTTP_SERVER_ROOT`: Optional root path used for static content. Defaults to
-	`.` if unset.
+- `HTTP_SERVER_ROOT`: Optional root path the server treats as its working
+  directory when locating the `content/` folder it serves static files
+  from (e.g. requesting `/test.html` reads `$HTTP_SERVER_ROOT/content/test.html`).
+  Defaults to `.` (the current directory) if unset — set this if you run the
+  server from somewhere other than the repository root.
 
 ## Dev Container (OTP 26)
 
