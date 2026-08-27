@@ -87,6 +87,13 @@ stable address.
 Use randomized ports for local validation runs, especially in WSL Podman, where
 rootless port bindings can be left behind between repeated test runs.
 
+To verify the whole start/verify/stop flow works end to end (e.g. after
+changing the scripts or Dockerfile), run:
+
+```console
+$ ./scripts/test-class-stack.sh
+```
+
 ### Instructor checklist
 
 Before class:

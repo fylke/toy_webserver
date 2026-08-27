@@ -36,4 +36,4 @@ echo "Using host ports: tcp=${HOST_TCP_PORT:-7777} http=${HOST_HTTP_PORT:-8080}"
 printf 'HOST_TCP_PORT=%s\nHOST_HTTP_PORT=%s\n' "${HOST_TCP_PORT:-7777}" "${HOST_HTTP_PORT:-8080}" > "$(dirname "$0")/../.class-ports.env"
 
 $COMPOSE_CMD up -d --build
-$COMPOSE_CMD exec -T erlang-dev sh -lc 'cd /workspace/toy_webserver && erlc *.erl && nohup erl -noshell -eval "http_server:start(8080)." >/tmp/http_server.log 2>&1 &'
+$COMPOSE_CMD exec -T erlang-dev sh -lc 'cd /workspace/toy_webserver && rebar3 compile && (nohup erl -noshell -pa _build/default/lib/toy_webserver/ebin -eval "http_server:start(8080)." >/tmp/http_server.log 2>&1 &)'
