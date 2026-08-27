@@ -36,19 +36,12 @@ function Invoke-Compose {
     throw 'Install podman or podman-compose before running this script.'
 }
 
-if ([string]::IsNullOrWhiteSpace($env:CLASS_SHARED_TOKEN)) {
-    $env:CLASS_SHARED_TOKEN = 'replace-this-before-class'
-}
-
 if ($env:RANDOMIZE_PORTS -eq '1') {
     if ([string]::IsNullOrWhiteSpace($env:HOST_TCP_PORT)) {
         $env:HOST_TCP_PORT = [string](Get-FreePort)
     }
     if ([string]::IsNullOrWhiteSpace($env:HOST_HTTP_PORT)) {
         $env:HOST_HTTP_PORT = [string](Get-FreePort)
-    }
-    if ([string]::IsNullOrWhiteSpace($env:HOST_PROXY_PORT)) {
-        $env:HOST_PROXY_PORT = [string](Get-FreePort)
     }
 }
 
@@ -62,12 +55,7 @@ if ([string]::IsNullOrWhiteSpace($httpPort)) {
     $httpPort = '8080'
 }
 
-$proxyPort = $env:HOST_PROXY_PORT
-if ([string]::IsNullOrWhiteSpace($proxyPort)) {
-    $proxyPort = '8081'
-}
-
-Write-Host "Using host ports: tcp=$tcpPort http=$httpPort proxy=$proxyPort"
+Write-Host "Using host ports: tcp=$tcpPort http=$httpPort"
 
 Invoke-Compose @('up', '-d', '--build')
 Invoke-Compose @('exec', '-T', 'erlang-dev', 'sh', '-lc', 'cd /workspace/toy_webserver && erlc *.erl && nohup erl -noshell -eval "http_server:start(8080)." >/tmp/http_server.log 2>&1 &')

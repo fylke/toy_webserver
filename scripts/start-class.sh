@@ -1,10 +1,6 @@
 #!/usr/bin/env sh
 set -eu
 
-SHARED_TOKEN="${CLASS_SHARED_TOKEN:-replace-this-before-class}"
-
-export CLASS_SHARED_TOKEN="$SHARED_TOKEN"
-
 find_free_port() {
 	python3 - <<'PY'
 import socket
@@ -19,8 +15,7 @@ PY
 if [ "${RANDOMIZE_PORTS:-0}" = "1" ]; then
 	: "${HOST_TCP_PORT:=$(find_free_port)}"
 	: "${HOST_HTTP_PORT:=$(find_free_port)}"
-	: "${HOST_PROXY_PORT:=$(find_free_port)}"
-	export HOST_TCP_PORT HOST_HTTP_PORT HOST_PROXY_PORT
+	export HOST_TCP_PORT HOST_HTTP_PORT
 fi
 
 if [ -n "${COMPOSE_CMD:-}" ]; then
@@ -36,7 +31,7 @@ else
 	exit 1
 fi
 
-echo "Using host ports: tcp=${HOST_TCP_PORT:-7777} http=${HOST_HTTP_PORT:-8080} proxy=${HOST_PROXY_PORT:-8081}"
+echo "Using host ports: tcp=${HOST_TCP_PORT:-7777} http=${HOST_HTTP_PORT:-8080}"
 
 $COMPOSE_CMD up -d --build
 $COMPOSE_CMD exec -T erlang-dev sh -lc 'cd /workspace/toy_webserver && erlc *.erl && nohup erl -noshell -eval "http_server:start(8080)." >/tmp/http_server.log 2>&1 &'
