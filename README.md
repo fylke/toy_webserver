@@ -6,10 +6,9 @@ An extremely simple web server for educational purposes. It exists in four diffe
 3. A fully parallel TCP server that still only echoes what it's sent
 4. A basic HTTP server that understands GET
 
-This repository contains the instructor's reference implementation (marking
-key) under `src/`. Students receive a copy of this repository **without**
-`src/` and implement the modules themselves; `test/server_SUITE.erl` is the
-shared grading suite both sides build against.
+This repository contains a reference implementation under `src/`. The idea is that we write
+the code together and discuss it as we go, but if you want to do it on your own; use the
+reference implementation and test suite when you get stuck.
 
 ## For Students
 
@@ -21,11 +20,11 @@ shared grading suite both sides build against.
 
 ### Your task
 
-Implement the modules exercised by `test/server_SUITE.erl` under `src/`
-(`client.erl`, `http.erl`, `http_server.erl`, `single_req_server.erl`,
-`multi_req_server.erl`, `parallel_server.erl`, etc.) to satisfy the four
-versions listed above. The test suite is your spec — match the module and
-function names it calls.
+Delete (or rename) everything in `src/` except `http.erl`, then implement the
+modules exercised by `test/server_SUITE.erl` (`client.erl`, `http_server.erl`,
+`single_req_server.erl`, `multi_req_server.erl`, `parallel_server.erl`, etc.)
+to satisfy the four versions listed above. The test suite is your spec —
+match the module and function names it calls.
 
 ### Build & test loop
 
@@ -85,7 +84,7 @@ automatically.
 
 ## For Instructors
 
-The sections below are for running the reference implementation (`src/`) to
+The sections below are for running a reference implementation of `src/` to
 host a live demo for students, and are not needed by students working on
 their own implementation.
 
