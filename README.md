@@ -7,6 +7,24 @@ An extremely simple web server for educational purposes. It exists in four diffe
 - Use the WSL path if you work inside WSL or a VS Code WSL window.
 - Both paths use the same container stack.
 
+## Prerequisites
+
+Students only need a web browser and a network connection to the
+instructor's machine — nothing else to install.
+
+Instructors need:
+
+- **Podman**, with either the `podman compose` plugin or `podman-compose`.
+  The class hosting scripts only auto-detect Podman; Docker works too, but
+  only if you set `COMPOSE_CMD="docker compose"` before running them.
+- **Windows path:** Podman for Windows, which runs via a Podman machine
+  backed by WSL2. You don't interact with WSL directly, but it gets
+  installed under the hood the first time you run `podman machine init`.
+- **WSL path:** WSL itself, with Podman/`podman-compose` installed inside it.
+- To use the separate "Dev Container (OTP 26)" VS Code workflow below, you
+  also need the Dev Containers extension and Docker (or Podman configured as
+  VS Code's container engine).
+
 1. A TCP server that echoes what is sent to it, and then closes the connection
 2. A TCP server that can serve multiple clients, but only one at a time
 3. A fully parallel TCP server that still only echoes what it's sent
