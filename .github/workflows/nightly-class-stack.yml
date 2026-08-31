@@ -18,7 +18,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Run start/verify/stop test (bash)
-        run: ./scripts/test-class-stack.sh
+        run: sh ./scripts/test-class-stack.sh
 
   pwsh-scripts:
     runs-on: ubuntu-latest

@@ -74,8 +74,10 @@ tc_http_server_get(Config) ->
     ct:pal("Reply ~p~n", [Reply]),
     {StatusLine, Headers, Body} = Reply,
     ?assertEqual({"HTTP/1.1", 200, "OK"}, StatusLine),
-    [{"date", _Date},
-     {"content-type", "text/html; charset=utf-8"}] = Headers,
+        HeaderMap = maps:from_list(Headers),
+        ?assertMatch(#{"date" := _Date,
+                                     "content-type" := "text/html; charset=utf-8"},
+                                 HeaderMap),
     ?assertEqual("<!DOCTYPE html><html>Test content</html>", Body),
     http_server ! stop,
     ok.

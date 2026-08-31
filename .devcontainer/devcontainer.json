@@ -13,7 +13,8 @@
         "terminal.integrated.defaultProfile.linux": "bash"
       },
       "extensions": [
-        "erlang-ls.erlang-ls"
+        "erlang-ls.erlang-ls",
+        "yuce.erlang-otp"
       ]
     }
   }
