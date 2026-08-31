@@ -5,6 +5,7 @@ RUN apt-get update \
         bash \
         ca-certificates \
         git \
+    && git config --system url."https://github.com/".insteadOf "git@github.com:" \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /workspace/toy_webserver
