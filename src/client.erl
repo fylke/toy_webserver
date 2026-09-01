@@ -25,7 +25,7 @@ handle_connection({ok, Socket}, Data) ->
         receive
             Reply ->
                 io:format("Client~p: Reply: ~p~n", [Pid, Reply]),
-                {ok, Reply}
+                Reply
         after timer:seconds(30) ->
             io:format("Client~p: No data received.~n", [Pid]),
             {error, no_response}

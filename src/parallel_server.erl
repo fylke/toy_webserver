@@ -6,7 +6,7 @@ start(Port) ->
     {ok, ListenSocket} =
         gen_tcp:listen(Port,
                        [list,
-                        {active, true},
+                        {active, false},
                         {reuseaddr, true}]),
     listen_state(ListenSocket).
 
@@ -35,7 +35,8 @@ listen_state(Socket) ->
             HandlerPid = spawn(?MODULE, established_state, [EstablishedSocket]),
             %% Whichever process accepts TCP connection owns the socket, and also gets
             %% any data client sends, so need to handover socket to handler process.
-            gen_tcp:controlling_process(EstablishedSocket, HandlerPid);
+            ok = gen_tcp:controlling_process(EstablishedSocket, HandlerPid),
+            HandlerPid ! activate;
         %% No client connected for a while, time out so we can check for stop
         %% message in next loop iteration.
         {error, timeout} ->
@@ -46,6 +47,9 @@ listen_state(Socket) ->
 established_state(Socket) ->
     Pid = self(),
     receive
+        activate ->
+            ok = inet:setopts(Socket, [{active, true}]),
+            established_state(Socket);
         {tcp, Socket, StringMsg} ->
             io:format("~p: Received message: ~p~n", [Pid, StringMsg]),
             io:format("~p: Working on request...~n", [Pid]),
