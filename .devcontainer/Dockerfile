@@ -10,4 +10,10 @@ RUN apt-get update \
     && git config --system url."https://github.com/".insteadOf "git@github.com:" \
     && rm -rf /var/lib/apt/lists/*
 
+RUN git clone --branch v1.8.0 --depth 1 https://github.com/WhatsApp/erlfmt.git /tmp/erlfmt \
+    && cd /tmp/erlfmt \
+    && rebar3 as release escriptize \
+    && install -m 755 _build/release/bin/erlfmt /usr/local/bin/erlfmt \
+    && rm -rf /tmp/erlfmt
+
 WORKDIR /workspace/toy_webserver

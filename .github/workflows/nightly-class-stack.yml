@@ -32,14 +32,7 @@ jobs:
 
   common-test:
     runs-on: ubuntu-latest
-    env:
-      # Needed for tc_http_server_get to find content/ under ct's working directory.
-      HTTP_SERVER_ROOT: ${{ github.workspace }}
     steps:
       - uses: actions/checkout@v4
-      - uses: erlef/setup-beam@v1
-        with:
-          otp-version: '26'
-          rebar3-version: '3.26.0'
       - name: Run Common Test suite
-        run: rebar3 ct
+        run: docker compose run --rm erlang-dev rebar3 ct
