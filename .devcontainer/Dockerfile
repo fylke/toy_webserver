@@ -1,6 +1,6 @@
 FROM docker.io/library/erlang:26-slim
 
-COPY bash.bashrc /etc/bash.bashrc
+COPY .devcontainer/bash.bashrc /etc/bash.bashrc
 
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
